@@ -76,13 +76,16 @@ class EpsGreedyQPolicy(Policy):
         self.eps = eps
 
     def select_action(self, q_values):
+
         assert q_values.ndim == 1
         nb_actions = q_values.shape[0]
 
+        #epsilon parameter defined above
         if np.random.uniform() < self.eps:
             action = np.random.random_integers(0, nb_actions-1)
         else:
             action = np.argmax(q_values)
+
         return action
 
     def get_config(self):
@@ -92,9 +95,9 @@ class EpsGreedyQPolicy(Policy):
 
 
 class BoltzmannQPolicy(Policy):
-    def __init__(self, tau=1., clip=(-500., 500.)):
+    def __init__(self, eps=1., clip=(-500., 500.)):
         super(BoltzmannQPolicy, self).__init__()
-        self.tau = tau
+        self.eps = eps
         self.clip = clip
 
     def select_action(self, q_values):
@@ -102,13 +105,121 @@ class BoltzmannQPolicy(Policy):
         q_values = q_values.astype('float64')
         nb_actions = q_values.shape[0]
 
-        exp_values = np.exp(np.clip(q_values / self.tau, self.clip[0], self.clip[1]))
+        exp_values = np.exp(np.clip(q_values / self.eps, self.clip[0], self.clip[1]))
         probs = exp_values / np.sum(exp_values)
         action = np.random.choice(range(nb_actions), p=probs)
         return action
 
     def get_config(self):
         config = super(BoltzmannQPolicy, self).get_config()
-        config['tau'] = self.tau
+        config['eps'] = self.eps
         config['clip'] = self.clip
         return config
+
+
+class Dropout(Policy):
+    def __init__(self, prob=.1):
+        super(Dropout, self).__init__()
+        self.prob = prob
+
+    """
+    Select action based on Highest Uncertainty over Q Values
+    """
+    def select_action(self, q_values):
+
+
+        q_values = np.absolute(q_values)
+        assert q_values.ndim == 1
+        nb_actions = q_values.shape[0]
+
+        #use absolute of Q values - absolute value of variance 
+        # print "Variance over Q", q_values
+        """
+        Pick action which has highest uncertainty over Q
+        """
+        action = np.argmax(q_values)
+
+        return action
+
+    def get_config(self):
+        config = super(Dropout, self).get_config()
+        config['prob'] = self.prob
+        return config
+
+
+class Dropout_Epsilon_Greedy(Policy):
+    def __init__(self, eps=.1):
+        super(Dropout_Epsilon_Greedy, self).__init__()
+        self.eps = eps
+
+    """
+    Select action epsilon greedily - greedy action wrt mean of Q posterior distribution
+    """
+    def select_action(self, q_values):
+
+        assert q_values.ndim == 1
+        nb_actions = q_values.shape[0]
+
+
+        if np.random.uniform() < self.eps:
+            action = np.random.random_integers(0, nb_actions-1)
+        else:
+            action = np.argmax(q_values)
+
+        return action
+
+    def get_config(self):
+        config = super(Dropout, self).get_config()
+        config['prob'] = self.prob
+        return config
+
+
+class Dropout_Greedy(Policy):
+    def __init__(self, eps=.1):
+        super(Dropout_Greedy, self).__init__()
+        self.eps = eps
+
+    """
+    Select action greedily - greedy action wrt mean of Q posterior distribution
+    """
+    def select_action(self, q_values):
+
+        assert q_values.ndim == 1
+        nb_actions = q_values.shape[0]
+
+        action = np.argmax(q_values)
+
+
+        return action
+
+    def get_config(self):
+        config = super(Dropout, self).get_config()
+        config['prob'] = self.prob
+        return config
+
+
+
+
+class Dropout_Boltzmann(Policy):
+    def __init__(self, eps=1., clip=(-500., 500.)):
+        super(Dropout_Boltzmann, self).__init__()
+        self.eps = eps
+        self.clip = clip
+
+    def select_action(self, q_values):
+        assert q_values.ndim == 1
+        q_values = q_values.astype('float64')
+        nb_actions = q_values.shape[0]
+
+        exp_values = np.exp(np.clip(q_values / self.eps, self.clip[0], self.clip[1]))
+        probs = exp_values / np.sum(exp_values)
+        action = np.random.choice(range(nb_actions), p=probs)
+        return action
+
+    def get_config(self):
+        config = super(BoltzmannQPolicy, self).get_config()
+        config['eps'] = self.eps
+        config['clip'] = self.clip
+        return config
+
+

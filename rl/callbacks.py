@@ -116,7 +116,7 @@ class TrainEpisodeLogger(Callback):
     def on_train_begin(self, logs):
         self.train_start = timeit.default_timer()
         self.metrics_names = self.model.metrics_names
-        print('Training for {} steps ...'.format(self.params['nb_steps']))
+        print('Training the DQN Agent for total of {} steps ...'.format(self.params['nb_steps']))
         
     def on_train_end(self, logs):
         duration = timeit.default_timer() - self.train_start
@@ -180,6 +180,8 @@ class TrainEpisodeLogger(Callback):
         del self.rewards[episode]
         del self.actions[episode]
         del self.metrics[episode]
+
+
 
     def on_step_end(self, step, logs):
         episode = logs['episode']

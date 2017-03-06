@@ -1,5 +1,8 @@
 from __future__ import division
 import argparse
+import sys
+sys.path.append("/Users/Riashat/Documents/PhD_Research/BASIC_ALGORITHMS/Keras-RL/keras-rl/")
+
 
 from PIL import Image
 import numpy as np
@@ -42,7 +45,7 @@ class AtariProcessor(Processor):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', choices=['train', 'test'], default='train')
-parser.add_argument('--env-name', type=str, default='Breakout-v0')
+parser.add_argument('--env-name', type=str, default='Seaquest-v0')
 parser.add_argument('--weights', type=str, default=None)
 args = parser.parse_args()
 
